@@ -36,9 +36,9 @@ class App:
         frame_izq = tk.Frame(frame_central, bg="#142b44", bd=0, highlightthickness=0, relief=tk.FLAT)
         frame_izq.pack(side=tk.LEFT, padx=10, pady=10, anchor="n", fill=tk.Y)
         tk.Label(frame_izq, text="Acciones", font=("Arial", 12, "bold"), bg="#142b44", fg="#eff4fa").pack(pady=(0,10))
-        tk.Button(frame_izq, text="Editar config.yaml", command=self.editar_yaml, width=18, bg="#715d82", fg="#eff4fa", font=("Arial", 10, "bold"), activebackground="#715d82", activeforeground="#eff4fa", bd=0, highlightthickness=0, relief=tk.FLAT).pack(pady=4, fill=tk.X)
-        tk.Button(frame_izq, text="Ejecutar Log", command=self.ejecutar_log, width=18, bg="#715d82", fg="#eff4fa", font=("Arial", 10, "bold"), activebackground="#715d82", activeforeground="#eff4fa", bd=0, highlightthickness=0, relief=tk.FLAT).pack(pady=4, fill=tk.X)
-        tk.Button(frame_izq, text="Dar permisos de ejecución", command=self.dar_permisos_ejecucion, width=18, bg="#715d82", fg="#eff4fa", font=("Arial", 10, "bold"), activebackground="#715d82", activeforeground="#eff4fa", bd=0, highlightthickness=0, relief=tk.FLAT).pack(pady=4, fill=tk.X)
+        tk.Button(frame_izq, text="📝 Editar config.yaml", command=self.editar_yaml, width=18, bg="#715d82", fg="#eff4fa", font=("Arial", 10, "bold"), activebackground="#715d82", activeforeground="#eff4fa", bd=0, highlightthickness=0, relief=tk.FLAT).pack(pady=4, fill=tk.X)
+        tk.Button(frame_izq, text="▶️ Ejecutar Log", command=self.ejecutar_log, width=18, bg="#3cb371", fg="#eff4fa", font=("Arial", 10, "bold"), activebackground="#3cb371", activeforeground="#eff4fa", bd=0, highlightthickness=0, relief=tk.FLAT).pack(pady=4, fill=tk.X)
+        tk.Button(frame_izq, text="🔑 Dar permisos", command=self.dar_permisos_ejecucion, width=18, bg="#f4b942", fg="#142b44", font=("Arial", 10, "bold"), activebackground="#f4b942", activeforeground="#142b44", bd=0, highlightthickness=0, relief=tk.FLAT).pack(pady=4, fill=tk.X)
 
         # Listado de pozos en el centro (centrado vertical y horizontal)
         frame_lista = tk.Frame(frame_central, bg="#142b44")
@@ -53,9 +53,9 @@ class App:
         frame_der = tk.Frame(frame_central, bg="#142b44", bd=0, highlightthickness=0, relief=tk.FLAT)
         frame_der.pack(side=tk.LEFT, padx=10, pady=10, anchor="n", fill=tk.Y)
         tk.Label(frame_der, text="Gestión de pozos", font=("Arial", 12, "bold"), bg="#142b44", fg="#eff4fa").pack(pady=(0,10))
-        tk.Button(frame_der, text="Copiar pozo", command=self.copiar_pozo, width=18, bg="#715d82", fg="#eff4fa", font=("Arial", 10, "bold"), activebackground="#715d82", activeforeground="#eff4fa", bd=0, highlightthickness=0, relief=tk.FLAT).pack(pady=4, fill=tk.X)
-        tk.Button(frame_der, text="Renombrar pozo", command=self.renombrar_pozo, width=18, bg="#715d82", fg="#eff4fa", font=("Arial", 10, "bold"), activebackground="#715d82", activeforeground="#eff4fa", bd=0, highlightthickness=0, relief=tk.FLAT).pack(pady=4, fill=tk.X)
-        tk.Button(frame_der, text="Eliminar pozo", command=self.eliminar_pozo, width=18, bg="#715d82", fg="#eff4fa", font=("Arial", 10, "bold"), activebackground="#715d82", activeforeground="#eff4fa", bd=0, highlightthickness=0, relief=tk.FLAT).pack(pady=4, fill=tk.X)
+        tk.Button(frame_der, text="📄 Copiar pozo", command=self.copiar_pozo, width=18, bg="#715d82", fg="#eff4fa", font=("Arial", 10, "bold"), activebackground="#715d82", activeforeground="#eff4fa", bd=0, highlightthickness=0, relief=tk.FLAT).pack(pady=4, fill=tk.X)
+        tk.Button(frame_der, text="📝 Renombrar pozo", command=self.renombrar_pozo, width=18, bg="#715d82", fg="#eff4fa", font=("Arial", 10, "bold"), activebackground="#715d82", activeforeground="#eff4fa", bd=0, highlightthickness=0, relief=tk.FLAT).pack(pady=4, fill=tk.X)
+        tk.Button(frame_der, text="🗑️ Eliminar pozo", command=self.eliminar_pozo, width=18, bg="#e74c3c", fg="#eff4fa", font=("Arial", 10, "bold"), activebackground="#e74c3c", activeforeground="#eff4fa", bd=0, highlightthickness=0, relief=tk.FLAT).pack(pady=4, fill=tk.X)
 
         procesos_frame = tk.Frame(root, bg="#142b44")
         procesos_frame.pack(pady=5, fill="both", expand=True)
@@ -64,12 +64,15 @@ class App:
         self.lista_procesos.pack(pady=5)
         self.lista_procesos.bind("<<ListboxSelect>>", self.mostrar_log_proceso)
         self.lista_procesos.bind("<Delete>", self.detener_proceso_evento)
-        tk.Button(procesos_frame, text="Detener proceso seleccionado", command=self.detener_proceso, bg="#715d82", fg="#eff4fa", font=("Arial", 10, "bold"), activebackground="#715d82", activeforeground="#eff4fa", bd=0, highlightthickness=0, relief=tk.FLAT).pack(pady=5)
+        tk.Button(procesos_frame, text="⏹️ Detener proceso seleccionado", command=self.detener_proceso, bg="#e67e22", fg="#eff4fa", font=("Arial", 10, "bold"), activebackground="#e67e22", activeforeground="#eff4fa", bd=0, highlightthickness=0, relief=tk.FLAT).pack(pady=5)
            
         self.log_text = scrolledtext.ScrolledText(root, height=20, width=100, font=("Consolas", 10), bg="#142b44", fg="#eff4fa", insertbackground="#eff4fa", borderwidth=2, relief=tk.GROOVE, highlightbackground="#715d82", highlightcolor="#715d82")
         self.log_text.pack(pady=5)
 
         self.actualizar_lista()
+
+        # Bind para confirmar cierre
+        self.root.protocol("WM_DELETE_WINDOW", self.on_close)
 
     def actualizar_lista(self):
         self.lista_pozos.delete(0, tk.END)
@@ -175,8 +178,7 @@ class App:
         for (tipo_proc, pozo), proceso in self.processes.items():
             if tipo_proc == tipo:
                 estado = "En ejecución" if proceso.poll() is None else "Finalizado"
-                pid = proceso.pid if proceso.poll() is None else "-"
-                self.lista_procesos.insert(tk.END, f"{pozo} - PID {pid} - {estado}")
+                self.lista_procesos.insert(tk.END, f"{pozo}")
 
     def mostrar_log_proceso(self, event=None):
         seleccion = self.lista_procesos.curselection()
@@ -246,10 +248,63 @@ class App:
     def eliminar_pozo(self):
         if not self.selected_pozo_path:
             return
+        nombre = os.path.basename(self.selected_pozo_path)
+        if not self.confirmar_eliminacion_pozo(nombre):
+            return
         import shutil
         shutil.rmtree(self.selected_pozo_path)
         self.selected_pozo_path = None
         self.actualizar_lista()
+
+    def eliminar_pozo_evento(self, event=None):
+        if not self.selected_pozo_path:
+            return
+        nombre = os.path.basename(self.selected_pozo_path)
+        if self.confirmar_eliminacion_pozo(nombre):
+            import shutil
+            shutil.rmtree(self.selected_pozo_path)
+            self.selected_pozo_path = None
+            self.actualizar_lista()
+
+    def confirmar_eliminacion_pozo(self, nombre):
+        top = tk.Toplevel(self.root)
+        top.title("Confirmar eliminación")
+        top.configure(bg="#142b44")
+        tk.Label(top, text=f"Para eliminar el pozo '{nombre}', escribe DELETE en mayúsculas:", bg="#142b44", fg="#eff4fa", font=("Arial", 11)).pack(padx=20, pady=(20,10))
+        entry = tk.Entry(top, font=("Arial", 12, "bold"))
+        entry.pack(padx=20, pady=10)
+        entry.focus_set()
+        result = []
+        def confirmar():
+            if entry.get() == "DELETE":
+                result.append(True)
+                top.destroy()
+            else:
+                messagebox.showerror("Error", "Debes escribir DELETE en mayúsculas para confirmar.")
+        tk.Button(top, text="Confirmar", command=confirmar, bg="#715d82", fg="#eff4fa", font=("Arial", 10, "bold"), activebackground="#715d82", activeforeground="#eff4fa", bd=0).pack(pady=(0,20))
+        self.root.wait_window(top)
+        return bool(result)
+
+    def on_tipo_change(self):
+        self.actualizar_lista()
+        self.actualizar_lista_procesos()
+
+    def detener_proceso_evento(self, event=None):
+        seleccion = self.lista_procesos.curselection()
+        if not seleccion:
+            return
+        seleccionado = self.lista_procesos.get(seleccion[0])
+        nombre_pozo = seleccionado.split(" - ")[0]
+        tipo = self.tipo_var.get()
+        key = (tipo, nombre_pozo)
+        proceso = self.processes.get(key)
+        if proceso and proceso.poll() is None:
+            if messagebox.askyesno("Advertencia", f"¿Seguro que deseas detener el proceso de '{nombre_pozo}'?"):
+                self.detener_proceso()
+
+    def on_close(self):
+        if messagebox.askyesno("Confirmar salida", "¿Seguro que deseas cerrar la aplicación?"):
+            self.root.destroy()
 
     def pedir_nombre(self, titulo, valor_inicial=""):
         top = tk.Toplevel(self.root)
@@ -266,29 +321,6 @@ class App:
         self.root.wait_window(top)
         return nombre[0] if nombre else None
 
-    def on_tipo_change(self):
-        self.actualizar_lista()
-        self.actualizar_lista_procesos()
-
-    def eliminar_pozo_evento(self, event=None):
-        if not self.selected_pozo_path:
-            return
-        nombre = os.path.basename(self.selected_pozo_path)
-        if messagebox.askyesno("Advertencia", f"¿Seguro que deseas eliminar el pozo '{nombre}'?"):
-            self.eliminar_pozo()
-
-    def detener_proceso_evento(self, event=None):
-        seleccion = self.lista_procesos.curselection()
-        if not seleccion:
-            return
-        seleccionado = self.lista_procesos.get(seleccion[0])
-        nombre_pozo = seleccionado.split(" - ")[0]
-        tipo = self.tipo_var.get()
-        key = (tipo, nombre_pozo)
-        proceso = self.processes.get(key)
-        if proceso and proceso.poll() is None:
-            if messagebox.askyesno("Advertencia", f"¿Seguro que deseas detener el proceso de '{nombre_pozo}'?"):
-                self.detener_proceso()
 if __name__ == "__main__":
     root = tk.Tk()
     app = App(root)
