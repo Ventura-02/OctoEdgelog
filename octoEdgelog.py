@@ -65,13 +65,9 @@ class App:
         self.lista_procesos.bind("<<ListboxSelect>>", self.mostrar_log_proceso)
         self.lista_procesos.bind("<Delete>", self.detener_proceso_evento)
         tk.Button(procesos_frame, text="Detener proceso seleccionado", command=self.detener_proceso, bg="#715d82", fg="#eff4fa", font=("Arial", 10, "bold"), activebackground="#715d82", activeforeground="#eff4fa", bd=0, highlightthickness=0, relief=tk.FLAT).pack(pady=5)
-        tk.Button(procesos_frame, text="Guardar estado de procesos", command=self.guardar_procesos_activos, bg="#715d82", fg="#eff4fa", font=("Arial", 10, "bold"), activebackground="#715d82", activeforeground="#eff4fa", bd=0, highlightthickness=0, relief=tk.FLAT).pack(pady=5)
-
+           
         self.log_text = scrolledtext.ScrolledText(root, height=20, width=100, font=("Consolas", 10), bg="#142b44", fg="#eff4fa", insertbackground="#eff4fa", borderwidth=2, relief=tk.GROOVE, highlightbackground="#715d82", highlightcolor="#715d82")
         self.log_text.pack(pady=5)
-
-        self.procesos_guardados_path = os.path.join(os.path.expanduser("~"), "procesos_pozos_guardados.json")
-        self.cargar_procesos_guardados()
 
         self.actualizar_lista()
 
@@ -293,72 +289,6 @@ class App:
         if proceso and proceso.poll() is None:
             if messagebox.askyesno("Advertencia", f"¿Seguro que deseas detener el proceso de '{nombre_pozo}'?"):
                 self.detener_proceso()
-
-    def guardar_procesos_activos(self):
-        activos = []
-        for (tipo, pozo), proceso in self.processes.items():
-            if proceso.poll() is None:
-                activos.append({
-                    "tipo": tipo,
-                    "pozo": pozo
-                })
-        with open(self.procesos_guardados_path, "w") as f:
-            json.dump(activos, f)
-        messagebox.showinfo("Guardado", "Estado de procesos activos guardado.")
-
-    def cargar_procesos_guardados(self):
-        if os.path.exists(self.procesos_guardados_path):
-            try:
-                with open(self.procesos_guardados_path, "r") as f:
-                    self.procesos_guardados = json.load(f)
-            except Exception:
-                self.procesos_guardados = []
-        else:
-            self.procesos_guardados = []
-
-    def restaurar_procesos_guardados(self):
-        for proc in self.procesos_guardados:
-            tipo = proc["tipo"]
-            pozo = proc["pozo"]
-            base_path = self.base_paths.get(tipo)
-            if not base_path:
-                continue
-            pozo_path = os.path.join(base_path, pozo)
-            script_path = os.path.join(pozo_path, "LogDrillingCalculation_v1.6")
-            if os.path.exists(script_path):
-                # Lanzar proceso en segundo plano
-                try:
-                    process = subprocess.Popen(["./LogDrillingCalculation_v1.6"],
-                                              cwd=pozo_path,
-                                              stdout=subprocess.PIPE,
-                                              stderr=subprocess.STDOUT,
-                                              text=True)
-                    key = (tipo, pozo)
-                    self.processes[key] = process
-                    self.logs[key] = "[Restaurado] Proceso restaurado tras reinicio.\n"
-                    self.root.after(100, self.actualizar_lista_procesos)
-
-                    def leer_salida():
-                        for line in process.stdout:
-                            self.logs[key] += line
-                            current_selection = self.lista_procesos.curselection()
-                            if current_selection:
-                                seleccionado = self.lista_procesos.get(current_selection[0])
-                                if pozo in seleccionado:
-                                    self.mostrar_log_proceso()
-                        process.wait()
-                        self.logs[key] += "\n>> Proceso finalizado.\n"
-                        self.processes.pop(key, None)
-                        self.root.after(100, self.actualizar_lista_procesos)
-
-                    threading.Thread(target=leer_salida, daemon=True).start()
-                except Exception as e:
-                    self.logs[key] = f"Error al restaurar: {e}\n"
-                    self.mostrar_log_proceso()
-
-    # Llamar a restaurar procesos guardados al iniciar
-        self.root.after(1000, self.restaurar_procesos_guardados)
-
 if __name__ == "__main__":
     root = tk.Tk()
     app = App(root)
