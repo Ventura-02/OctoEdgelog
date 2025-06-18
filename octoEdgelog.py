@@ -94,11 +94,6 @@ class App:
 
         tk.Button(procesos_frame, text="⏹️ Detener proceso seleccionado", command=self.detener_proceso, bg="#e67e22", fg="#eff4fa", font=("Arial", 10, "bold"), activebackground="#e67e22", activeforeground="#eff4fa", bd=0, highlightthickness=0, relief=tk.FLAT).pack(pady=5)
 
-        # Botón de ordenar arriba de la lista de procesos
-        self.boton_ordenar = Button(
-            procesos_frame, text="Ordenar", command=self.ordenar_procesos_alfabeticamente,font=("Arial", 7, "bold"), height=1, padx=1, pady=1)
-        self.boton_ordenar.pack(side="left", anchor="e", padx=1)
-
         self.lista_procesos = tk.Listbox(procesos_frame, width=70, height=25, font=("Consolas", 10), bg="#142b44", fg="#eff4fa", selectbackground="#715d82", selectforeground="#eff4fa", borderwidth=2, relief=tk.GROOVE, highlightbackground="#715d82", highlightcolor="#715d82")
         self.lista_procesos.pack(side="top", fill="both", expand=True)
         self.lista_procesos.bind("<<ListboxSelect>>", self.mostrar_log_proceso)
@@ -236,10 +231,13 @@ class App:
     def actualizar_lista_procesos(self):
         self.lista_procesos.delete(0, tk.END)
         tipo = self.tipo_var.get()
-        for (tipo_proc, pozo), proceso in self.processes.items():
-            if tipo_proc == tipo:
-                estado = "En ejecución" if proceso.poll() is None else "Finalizado"
-                self.lista_procesos.insert(tk.END, f"{pozo}")
+        # Ordena los pozos alfabéticamente antes de insertarlos
+        procesos = [
+            pozo for (tipo_proc, pozo), proceso in self.processes.items()
+            if tipo_proc == tipo
+        ]
+        for pozo in sorted(procesos):
+            self.lista_procesos.insert(tk.END, f"{pozo}")
 
     def mostrar_log_proceso(self, event=None):
         seleccion = self.lista_procesos.curselection()
