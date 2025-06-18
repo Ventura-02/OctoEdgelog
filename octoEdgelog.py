@@ -1,11 +1,11 @@
 import tkinter as tk
 from tkinter import filedialog, messagebox, scrolledtext
 import os
-import yaml
 import subprocess
 import threading
 import stat
 import json
+from tkinter import Button
 
 class App:
     def __init__(self, root):
@@ -16,8 +16,8 @@ class App:
         self.logs = {}  # (tipo, pozo): log acumulado
 
         self.base_paths = {
-            "01Enrichment": os.path.expanduser("~/Documentos/01Enrichment"),
-            "02RMSE": os.path.expanduser("~/Documentos/02RMSE")
+            "01Enrichment": os.path.expanduser("~/Documents/01Enrichment"),
+            "02RMSE": os.path.expanduser("~/Documents/02RMSE")
         }
 
         self.tipo_var = tk.StringVar(value="01Enrichment")
@@ -36,38 +36,88 @@ class App:
         frame_izq = tk.Frame(frame_central, bg="#142b44", bd=0, highlightthickness=0, relief=tk.FLAT)
         frame_izq.pack(side=tk.LEFT, padx=10, pady=10, anchor="n", fill=tk.Y)
         tk.Label(frame_izq, text="Acciones", font=("Arial", 12, "bold"), bg="#142b44", fg="#eff4fa").pack(pady=(0,10))
-        tk.Button(frame_izq, text="📝 Editar config.yaml", command=self.editar_yaml, width=18, bg="#715d82", fg="#eff4fa", font=("Arial", 10, "bold"), activebackground="#715d82", activeforeground="#eff4fa", bd=0, highlightthickness=0, relief=tk.FLAT).pack(pady=4, fill=tk.X)
-        tk.Button(frame_izq, text="▶️ Ejecutar Log", command=self.ejecutar_log, width=18, bg="#3cb371", fg="#eff4fa", font=("Arial", 10, "bold"), activebackground="#3cb371", activeforeground="#eff4fa", bd=0, highlightthickness=0, relief=tk.FLAT).pack(pady=4, fill=tk.X)
-        tk.Button(frame_izq, text="🔑 Dar permisos", command=self.dar_permisos_ejecucion, width=18, bg="#f4b942", fg="#142b44", font=("Arial", 10, "bold"), activebackground="#f4b942", activeforeground="#142b44", bd=0, highlightthickness=0, relief=tk.FLAT).pack(pady=4, fill=tk.X)
+        tk.Button(frame_izq, text=" Editar config.yaml", command=self.editar_yaml, width=18, bg="#715d82", fg="#eff4fa", font=("Arial", 10, "bold"), activebackground="#715d82", activeforeground="#eff4fa", bd=0, highlightthickness=0, relief=tk.FLAT).pack(pady=4, fill=tk.X)
 
-        # Listado de pozos en el centro (centrado vertical y horizontal)
+        tk.Button(frame_izq, text="▶️ Ejecutar Log", command=self.ejecutar_log, width=18, bg="#3cb371", fg="#eff4fa", font=("Arial", 10, "bold"), activebackground="#3cb371", activeforeground="#eff4fa", bd=0, highlightthickness=0, relief=tk.FLAT).pack(pady=4, fill=tk.X)
+        tk.Button(frame_izq, text=" Dar permisos", command=self.dar_permisos_ejecucion, width=18, bg="#f4b942", fg="#142b44", font=("Arial", 10, "bold"), activebackground="#f4b942", activeforeground="#142b44", bd=0, highlightthickness=0, relief=tk.FLAT).pack(pady=4, fill=tk.X)
         frame_lista = tk.Frame(frame_central, bg="#142b44")
         frame_lista.pack(side=tk.LEFT, padx=40, pady=10, anchor="center", expand=True)
+        
+
         tk.Label(frame_lista, text="Pozos", font=("Arial", 14, "bold"), bg="#142b44", fg="#eff4fa").pack(pady=(0,5))
-        self.lista_pozos = tk.Listbox(frame_lista, width=30, font=("Arial", 12), bg="#142b44", fg="#eff4fa", selectbackground="#715d82", selectforeground="#eff4fa", borderwidth=2, relief=tk.GROOVE, highlightbackground="#715d82", highlightcolor="#715d82")
-        self.lista_pozos.pack(pady=5, padx=5, anchor="center")
+        # Botón para refrescar la lista
+        tk.Button(frame_lista, text="Recargar", command=self.actualizar_lista, bg="#142b44", fg="#FFD5B8", font=("Arial", 10, "bold"), activebackground="#142b44", activeforeground="#eff4fa", bd=0, highlightthickness=0, relief=tk.FLAT).pack(pady=(0, 10))
+
+
+        # Subframe para lista y scrollbar
+        sub_frame = tk.Frame(frame_lista, bg="#142b44")
+        sub_frame.pack()
+
+        # Scrollbar vertical
+        scrollbar = tk.Scrollbar(sub_frame, orient=tk.VERTICAL)
+
+        # Listbox con conexión a scrollbar
+        self.lista_pozos = tk.Listbox(sub_frame, width=70, font=("Arial", 12), bg="#142b44", fg="#eff4fa",
+                                    selectbackground="#715d82", selectforeground="#eff4fa",
+                                    borderwidth=2, relief=tk.GROOVE,
+                                    yscrollcommand=scrollbar.set,
+                                    highlightbackground="#715d82", highlightcolor="#715d82")
+        self.lista_pozos.pack(side=tk.LEFT, fill=tk.BOTH)
+
+        scrollbar.config(command=self.lista_pozos.yview)
+        scrollbar.pack(side=tk.RIGHT, fill=tk.Y)
+
+        # Eventos
         self.lista_pozos.bind("<<ListboxSelect>>", self.seleccionar_pozo)
         self.lista_pozos.bind("<Delete>", self.eliminar_pozo_evento)
+
 
         # Botones a la derecha del listado de pozos (sin borde ni recuadro)
         frame_der = tk.Frame(frame_central, bg="#142b44", bd=0, highlightthickness=0, relief=tk.FLAT)
         frame_der.pack(side=tk.LEFT, padx=10, pady=5, anchor="n", fill=tk.Y)
         tk.Label(frame_der, text="Gestión de pozos", font=("Arial", 12, "bold"), bg="#142b44", fg="#eff4fa").pack(pady=(0,10))
-        tk.Button(frame_der, text="📄 Copiar pozo", command=self.copiar_pozo, width=18, bg="#715d82", fg="#eff4fa", font=("Arial", 10, "bold"), activebackground="#715d82", activeforeground="#eff4fa", bd=0, highlightthickness=0, relief=tk.FLAT).pack(pady=4, fill=tk.X)
-        tk.Button(frame_der, text="📝 Renombrar pozo", command=self.renombrar_pozo, width=18, bg="#715d82", fg="#eff4fa", font=("Arial", 10, "bold"), activebackground="#715d82", activeforeground="#eff4fa", bd=0, highlightthickness=0, relief=tk.FLAT).pack(pady=4, fill=tk.X)
-        tk.Button(frame_der, text="🗑️ Eliminar pozo", command=self.eliminar_pozo, width=18, bg="#e74c3c", fg="#eff4fa", font=("Arial", 10, "bold"), activebackground="#e74c3c", activeforeground="#eff4fa", bd=0, highlightthickness=0, relief=tk.FLAT).pack(pady=4, fill=tk.X)
+        tk.Button(frame_der, text=" Copiar pozo", command=self.copiar_pozo, width=18, bg="#715d82", fg="#eff4fa", font=("Arial", 10, "bold"), activebackground="#715d82", activeforeground="#eff4fa", bd=0, highlightthickness=0, relief=tk.FLAT).pack(pady=4, fill=tk.X)
+        tk.Button(frame_der, text=" Renombrar pozo", command=self.renombrar_pozo, width=18, bg="#715d82", fg="#eff4fa", font=("Arial", 10, "bold"), activebackground="#715d82", activeforeground="#eff4fa", bd=0, highlightthickness=0, relief=tk.FLAT).pack(pady=4, fill=tk.X)
+        tk.Button(frame_der, text="️ Eliminar pozo", command=self.eliminar_pozo, width=18, bg="#e74c3c", fg="#eff4fa", font=("Arial", 10, "bold"), activebackground="#e74c3c", activeforeground="#eff4fa", bd=0, highlightthickness=0, relief=tk.FLAT).pack(pady=4, fill=tk.X)
 
-        procesos_frame = tk.Frame(root, bg="#142b44")
-        procesos_frame.pack(pady=5, fill="both", expand=True)
-        tk.Label(procesos_frame, text="Procesos Activos", font=("Arial", 12, "bold"), bg="#142b44", fg="#eff4fa").pack( pady=(0, 5))
-        self.lista_procesos = tk.Listbox(procesos_frame, width=100, height=15, font=("Consolas", 10), bg="#142b44", fg="#eff4fa", selectbackground="#715d82", selectforeground="#eff4fa", borderwidth=2, relief=tk.GROOVE, highlightbackground="#715d82", highlightcolor="#715d82")
-        self.lista_procesos.pack(pady=5)
-        self.lista_procesos.bind("<<ListboxSelect>>", self.mostrar_log_proceso)
-        self.lista_procesos.bind("<Delete>", self.detener_proceso_evento)
+
+     # Contenedor general que contiene la parte izquierda y derecha
+        frame_contenedor = tk.Frame(root, bg="#142b44")
+        frame_contenedor.pack(fill="both", expand=True, padx=10, pady=10)
+
+        # --------------------------
+        # Ventana izquierda: procesos activos
+        procesos_frame = tk.Frame(frame_contenedor, bg="#142b44")
+        procesos_frame.pack(side='left', fill="both", expand=True, padx=(0, 5))
+
+        tk.Label(procesos_frame, text="Procesos Activos", font=("Arial", 12, "bold"), bg="#142b44", fg="#eff4fa").pack(pady=(0, 5))
+
         tk.Button(procesos_frame, text="⏹️ Detener proceso seleccionado", command=self.detener_proceso, bg="#e67e22", fg="#eff4fa", font=("Arial", 10, "bold"), activebackground="#e67e22", activeforeground="#eff4fa", bd=0, highlightthickness=0, relief=tk.FLAT).pack(pady=5)
-           
-        self.log_text = scrolledtext.ScrolledText(root, height=20, width=100, font=("Consolas", 10), bg="#142b44", fg="#eff4fa", insertbackground="#eff4fa", borderwidth=2, relief=tk.GROOVE, highlightbackground="#715d82", highlightcolor="#715d82")
-        self.log_text.pack(pady=5)
+
+        # Botón de ordenar arriba de la lista de procesos
+        self.boton_ordenar = Button(
+            procesos_frame, text="Ordenar", command=self.ordenar_procesos_alfabeticamente,font=("Arial", 7, "bold"), height=1, padx=1, pady=1)
+        self.boton_ordenar.pack(side="left", anchor="e", padx=1)
+
+        self.lista_procesos = tk.Listbox(procesos_frame, width=70, height=25, font=("Consolas", 10), bg="#142b44", fg="#eff4fa", selectbackground="#715d82", selectforeground="#eff4fa", borderwidth=2, relief=tk.GROOVE, highlightbackground="#715d82", highlightcolor="#715d82")
+        self.lista_procesos.pack(side="top", fill="both", expand=True)
+        self.lista_procesos.bind("<<ListboxSelect>>", self.mostrar_log_proceso)
+        self.lista_procesos.bind("<Delete>", self.detener_proceso)
+
+        # --------------------------
+        # Ventana derecha: log
+        self.log_text = scrolledtext.ScrolledText(frame_contenedor, height=25, width=80, font=("Consolas", 10), bg="#142b44", fg="#eff4fa", insertbackground="#eff4fa", borderwidth=2, relief=tk.GROOVE, highlightbackground="#715d82", highlightcolor="#715d82")
+        self.log_text.pack(side='left', fill="both", expand=True, padx=(5, 0))
+
+
+        # --- Buscador de pozos ---
+        self.busqueda_var = tk.StringVar()
+        self.busqueda_var.trace_add("write", self.filtrar_lista_pozos)
+        tk.Label(frame_lista, text="Buscar pozo:", font=("Arial", 10), bg="#142b44", fg="#eff4fa").pack()
+        self.entry_busqueda = tk.Entry(frame_lista, textvariable=self.busqueda_var, font=("Arial", 11), width=40)
+        self.entry_busqueda.pack(pady=(0, 10))
+
+        self.todos_los_pozos = []  # Para guardar todos los pozos y filtrar
 
         self.actualizar_lista()
 
@@ -77,11 +127,20 @@ class App:
     def actualizar_lista(self):
         self.lista_pozos.delete(0, tk.END)
         base_path = self.base_paths[self.tipo_var.get()]
+        self.todos_los_pozos = []
         if os.path.exists(base_path):
             for nombre in sorted(os.listdir(base_path)):
                 pozo_path = os.path.join(base_path, nombre)
                 if os.path.isdir(pozo_path):
-                    self.lista_pozos.insert(tk.END, nombre)
+                    self.todos_los_pozos.append(nombre)
+        self.filtrar_lista_pozos()
+
+    def filtrar_lista_pozos(self, *args):
+        filtro = self.busqueda_var.get().lower()
+        self.lista_pozos.delete(0, tk.END)
+        for nombre in self.todos_los_pozos:
+            if filtro in nombre.lower():
+                self.lista_pozos.insert(tk.END, nombre)
 
     def seleccionar_pozo(self, event):
         seleccion = self.lista_pozos.curselection()
@@ -102,6 +161,7 @@ class App:
         editor = tk.Toplevel(self.root)
         editor.title("Editor de config.yaml")
         text_area = scrolledtext.ScrolledText(editor, width=80, height=25)
+
         text_area.pack()
 
         with open(yaml_path, "r") as f:
@@ -154,6 +214,7 @@ class App:
 
         except Exception as e:
             self.logs[key] = f"Error al ejecutar: {e}\n"
+
             self.mostrar_log_proceso()
 
     def dar_permisos_ejecucion(self):
@@ -192,13 +253,26 @@ class App:
         self.log_text.insert(tk.END, log)
         self.log_text.see(tk.END)
 
-    def detener_proceso(self):
+    def detener_proceso(self, event=None):
+        # Si el evento es de tipo teclado, evitar propagación
+        if event is not None:
+            # Evita que el evento se propague y se llame dos veces
+            if hasattr(event, 'widget') and event.widget != self.lista_procesos:
+                return "break"
+
         seleccion = self.lista_procesos.curselection()
         if not seleccion:
             return
         seleccionado = self.lista_procesos.get(seleccion[0])
         nombre_pozo = seleccionado.split(" - ")[0]
         tipo = self.tipo_var.get()
+        confirmar = messagebox.askyesno(
+            "Confirmar",
+            f"¿Seguro que deseas detener el proceso del pozo '{nombre_pozo}'?"
+        )
+        if not confirmar:
+            return
+
         key = (tipo, nombre_pozo)
         proceso = self.processes.get(key)
         if proceso and proceso.poll() is None:
@@ -206,6 +280,7 @@ class App:
             self.logs[key] += "\n>> Proceso detenido manualmente.\n"
             self.actualizar_lista_procesos()
             self.mostrar_log_proceso()
+          
 
     def crear_pozo(self):
         base_path = self.base_paths[self.tipo_var.get()]
@@ -288,20 +363,7 @@ class App:
     def on_tipo_change(self):
         self.actualizar_lista()
         self.actualizar_lista_procesos()
-
-    def detener_proceso_evento(self, event=None):
-        seleccion = self.lista_procesos.curselection()
-        if not seleccion:
-            return
-        seleccionado = self.lista_procesos.get(seleccion[0])
-        nombre_pozo = seleccionado.split(" - ")[0]
-        tipo = self.tipo_var.get()
-        key = (tipo, nombre_pozo)
-        proceso = self.processes.get(key)
-        if proceso and proceso.poll() is None:
-            if messagebox.askyesno("Advertencia", f"¿Seguro que deseas detener el proceso de '{nombre_pozo}'?"):
-                self.detener_proceso()
-
+        
     def on_close(self):
         if messagebox.askyesno("Confirmar salida", "¿Seguro que deseas cerrar la aplicación?"):
             self.root.destroy()
@@ -320,6 +382,17 @@ class App:
         tk.Button(top, text="OK", command=ok).pack(side=tk.LEFT)
         self.root.wait_window(top)
         return nombre[0] if nombre else None
+
+    def ordenar_procesos_alfabeticamente(self):
+        # Obtén todos los elementos de la lista
+        procesos = list(self.lista_procesos.get(0, "end"))
+
+        # Ordénalos alfabéticamente
+        procesos.sort()
+        # Limpia la lista y vuelve a insertar los procesos ordenados
+        self.lista_procesos.delete(0, "end")
+        for proceso in procesos:
+            self.lista_procesos.insert("end", proceso)
 
 if __name__ == "__main__":
     root = tk.Tk()
