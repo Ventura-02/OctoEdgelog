@@ -43,6 +43,10 @@ class App:
         frame_lista = tk.Frame(frame_central, bg="#142b44")
         frame_lista.pack(side=tk.LEFT, padx=40, pady=10, anchor="center", expand=True)
         
+        tk.Button(frame_izq, text="📋 Copiar log RMSE", command=self.copiar_log_rmse, 
+          width=18, bg="#3498db", fg="#eff4fa", font=("Arial", 10, "bold"), 
+          activebackground="#3498db", activeforeground="#eff4fa", 
+          bd=0, highlightthickness=0, relief=tk.FLAT).pack(pady=4, fill=tk.X)
 
         tk.Label(frame_lista, text="Pozos", font=("Arial", 14, "bold"), bg="#142b44", fg="#eff4fa").pack(pady=(0,5))
         # Botón para refrescar la lista
@@ -118,6 +122,17 @@ class App:
 
         # Bind para confirmar cierre
         self.root.protocol("WM_DELETE_WINDOW", self.on_close)
+
+    def copiar_log_rmse(self):
+        texto_rmse = '''<logCurveInfo uid="EDGE_RMSE">
+        <mnemonic>EDGE_RMSE</mnemonic>
+        <unit>unitless</unit>
+        <typeLogData>double</typeLogData>
+        </logCurveInfo>'''
+        self.root.clipboard_clear()  # Limpia el portapapeles
+        self.root.clipboard_append(texto_rmse)  # Copia el texto
+        self.root.update()  # Mantén el texto en el portapapeles después de cerrar la app
+        messagebox.showinfo("Copiado", "El texto del log RMSE ha sido copiado al portapapeles")
 
     def actualizar_lista(self):
         self.lista_pozos.delete(0, tk.END)
@@ -396,3 +411,4 @@ if __name__ == "__main__":
     root = tk.Tk()
     app = App(root)
     root.mainloop()
+    
